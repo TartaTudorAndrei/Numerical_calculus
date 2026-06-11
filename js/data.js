@@ -154,6 +154,29 @@ const courseData = {
                         <h3>Frobenius Norm</h3>
                         \\[ \\|A\\|_F = \\sqrt{\\sum \\sum a_{ij}^2} = \\sqrt{\\text{Tr}(A^T A)} \\]
                         <strong>Note:</strong> The Frobenius norm is <strong>not</strong> an induced norm, but it is <strong>submultiplicative</strong>: $\\|AB\\|_F \\le \\|A\\|_F \\|B\\|_F$.
+
+                        <div class="box example">
+                            <span class="box-title">Step-by-Step Example: Matrix Norms</span>
+                            Consider the matrix $A = \\begin{pmatrix} 1 & -2 \\\\ -3 & 4 \\end{pmatrix}$. Let's compute its 1-norm, infinity norm, and Frobenius norm.<br><br>
+                            <strong>Step 1: Compute the 1-norm (Max Column Sum)</strong>
+                            <ol>
+                                <li>Column 1 absolute sum: $|1| + |-3| = 1 + 3 = 4$</li>
+                                <li>Column 2 absolute sum: $|-2| + |4| = 2 + 4 = 6$</li>
+                                <li>$\\|A\\|_1 = \\max(4, 6) = 6$</li>
+                            </ol>
+                            <strong>Step 2: Compute the Infinity norm (Max Row Sum)</strong>
+                            <ol>
+                                <li>Row 1 absolute sum: $|1| + |-2| = 1 + 2 = 3$</li>
+                                <li>Row 2 absolute sum: $|-3| + |4| = 3 + 4 = 7$</li>
+                                <li>$\\|A\\|_\\infty = \\max(3, 7) = 7$</li>
+                            </ol>
+                            <strong>Step 3: Compute the Frobenius norm</strong>
+                            <ol>
+                                <li>Sum of squares of all elements: $1^2 + (-2)^2 + (-3)^2 + 4^2$</li>
+                                <li>$= 1 + 4 + 9 + 16 = 30$</li>
+                                <li>$\\|A\\|_F = \\sqrt{30} \\approx 5.477$</li>
+                            </ol>
+                        </div>
                     `
                 },
                 {
@@ -292,12 +315,29 @@ const courseData = {
                         <div class="box example">
                             <span class="box-title">Full Step-by-Step Example</span>
                             Solve $\\begin{pmatrix} 2 & 3 & 1 \\\\ 4 & 7 & 7 \\\\ -2 & 4 & 5 \\end{pmatrix} x = \\begin{pmatrix} 1 \\\\ 11 \\\\ 4 \\end{pmatrix}$.
-                            \\[ A = \\underbrace{\\begin{pmatrix} 1 & 0 & 0 \\\\ 2 & 1 & 0 \\\\ -1 & 7 & 1 \\end{pmatrix}}_{L} \\underbrace{\\begin{pmatrix} 2 & 3 & 1 \\\\ 0 & 1 & 5 \\\\ 0 & 0 & -29 \\end{pmatrix}}_{U} \\]
-                            1. <strong>Forward Substitution ($Ly = b$):</strong>
+                            <br><br>
+                            <strong>Step 1: Finding $L$ and $U$</strong>
+                            <br>Start with $U = A$ and $L = I$:
+                            <ol>
+                                <li>
+                                    <strong>Eliminate column 1:</strong><br>
+                                    Multiplier $l_{21} = \\frac{4}{2} = 2$. Row 2 $\\leftarrow$ Row 2 $- 2 \\times$ Row 1.<br>
+                                    Multiplier $l_{31} = \\frac{-2}{2} = -1$. Row 3 $\\leftarrow$ Row 3 $- (-1) \\times$ Row 1.<br>
+                                    Resulting matrix: $\\begin{pmatrix} 2 & 3 & 1 \\\\ 0 & 1 & 5 \\\\ 0 & 7 & 6 \\end{pmatrix}$.
+                                </li>
+                                <li>
+                                    <strong>Eliminate column 2:</strong><br>
+                                    Multiplier $l_{32} = \\frac{7}{1} = 7$. Row 3 $\\leftarrow$ Row 3 $- 7 \\times$ Row 2.<br>
+                                    Resulting $U = \\begin{pmatrix} 2 & 3 & 1 \\\\ 0 & 1 & 5 \\\\ 0 & 0 & -29 \\end{pmatrix}$.
+                                </li>
+                            </ol>
+                            Construct $L$ using the multipliers: $L = \\begin{pmatrix} 1 & 0 & 0 \\\\ l_{21} & 1 & 0 \\\\ l_{31} & l_{32} & 1 \\end{pmatrix} = \\begin{pmatrix} 1 & 0 & 0 \\\\ 2 & 1 & 0 \\\\ -1 & 7 & 1 \\end{pmatrix}$.
+                            <br><br>
+                            <strong>Step 2: Forward Substitution ($Ly = b$)</strong>
                             \\[ y_1 = 1 \\]
                             \\[ 2(1) + y_2 = 11 \\implies y_2 = 9 \\]
-                            \\[ -1(1) + 7(9) + y_3 = 4 \\implies y_3 = -58 \\]
-                            2. <strong>Backward Substitution ($Ux = y$):</strong>
+                            \\[ -1(1) + 7(9) + y_3 = 4 \\implies y_3 = 4 - 62 = -58 \\]
+                            <strong>Step 3: Backward Substitution ($Ux = y$)</strong>
                             \\[ -29x_3 = -58 \\implies x_3 = 2 \\]
                             \\[ 1x_2 + 5(2) = 9 \\implies x_2 = -1 \\]
                             \\[ 2x_1 + 3(-1) + 1(2) = 1 \\implies x_1 = 1 \\]
@@ -362,6 +402,26 @@ const courseData = {
                             Split: $M = \\frac{1}{\\omega}(D+\\omega L), N = \\frac{1}{\\omega}((1-\\omega)D - \\omega U)$. <br>
                             Optimal $\\omega = 1 + [\\mu / (1 + \\sqrt{1-\\mu^2})]^2$ where $\\mu = \\rho(A_J)$.
                         </div>
+
+                        <div class="box example">
+                            <span class="box-title">Step-by-Step Example: Jacobi & Gauss-Seidel</span>
+                            Solve the system $\\begin{pmatrix} 2 & 1 \\\\ 1 & 2 \\end{pmatrix} \\begin{pmatrix} x_1 \\\\ x_2 \\end{pmatrix} = \\begin{pmatrix} 3 \\\\ 3 \\end{pmatrix}$ starting with $x^{(0)} = (0, 0)^T$.<br><br>
+                            The equations are:
+                            \\[ 2x_1 + x_2 = 3 \\implies x_1 = \\frac{1}{2}(3 - x_2) \\]
+                            \\[ x_1 + 2x_2 = 3 \\implies x_2 = \\frac{1}{2}(3 - x_1) \\]
+                            <strong>Jacobi Method (Step 1):</strong>
+                            <ol>
+                                <li>$x_1^{(1)} = \\frac{1}{2}(3 - x_2^{(0)}) = \\frac{1}{2}(3 - 0) = 1.5$</li>
+                                <li>$x_2^{(1)} = \\frac{1}{2}(3 - x_1^{(0)}) = \\frac{1}{2}(3 - 0) = 1.5$</li>
+                            </ol>
+                            So $x^{(1)} = (1.5, 1.5)^T$.<br><br>
+                            <strong>Gauss-Seidel Method (Step 1):</strong>
+                            <ol>
+                                <li>$x_1^{(1)} = \\frac{1}{2}(3 - x_2^{(0)}) = \\frac{1}{2}(3 - 0) = 1.5$</li>
+                                <li>For $x_2^{(1)}$, use the newly computed $x_1^{(1)}$: <br>$x_2^{(1)} = \\frac{1}{2}(3 - x_1^{(1)}) = \\frac{1}{2}(3 - 1.5) = \\frac{1.5}{2} = 0.75$</li>
+                            </ol>
+                            So $x^{(1)} = (1.5, 0.75)^T$.
+                        </div>
                     `
                 }
             ]
@@ -389,10 +449,22 @@ const courseData = {
 
                         <div class="box example">
                             <span class="box-title">Regression Line Example</span>
-                            Data: (20,30), (22,35), (25,40), (23,38), (27,45). <br>
-                            Sums: $\\sum x=117, \\sum x^2=2767, \\sum y=188, \\sum xy=4459, n=5$. <br>
-                            System: $\\begin{pmatrix} 2767 & 117 \\\\ 117 & 5 \\end{pmatrix} \\begin{pmatrix} a \\\\ b \\end{pmatrix} = \\begin{pmatrix} 4459 \\\\ 188 \\end{pmatrix}$. <br>
-                            Result: $a \\approx 2.047, b \\approx -10.32$. Line: $y = 2.047x - 10.32$.
+                            Data points $(x_i, y_i)$: (20,30), (22,35), (25,40), (23,38), (27,45). <br><br>
+                            <strong>Step 1: Calculate the sums</strong>
+                            <ul>
+                                <li>$n = 5$</li>
+                                <li>$\\sum x_i = 20 + 22 + 25 + 23 + 27 = 117$</li>
+                                <li>$\\sum y_i = 30 + 35 + 40 + 38 + 45 = 188$</li>
+                                <li>$\\sum x_i^2 = 20^2 + 22^2 + 25^2 + 23^2 + 27^2 = 400 + 484 + 625 + 529 + 729 = 2767$</li>
+                                <li>$\\sum x_i y_i = 20(30) + 22(35) + 25(40) + 23(38) + 27(45) = 600 + 770 + 1000 + 874 + 1215 = 4459$</li>
+                            </ul>
+                            <strong>Step 2: Set up the Normal Equations</strong>
+                            \\[ \\begin{pmatrix} \\sum x_i^2 & \\sum x_i \\\\ \\sum x_i & n \\end{pmatrix} \\begin{pmatrix} a \\\\ b \\end{pmatrix} = \\begin{pmatrix} \\sum x_i y_i \\\\ \\sum y_i \\end{pmatrix} \\]
+                            \\[ \\begin{pmatrix} 2767 & 117 \\\\ 117 & 5 \\end{pmatrix} \\begin{pmatrix} a \\\\ b \\end{pmatrix} = \\begin{pmatrix} 4459 \\\\ 188 \\end{pmatrix} \\]
+                            <strong>Step 3: Solve the system</strong>
+                            \\[ a = \\frac{n\\sum x_i y_i - (\\sum x_i)(\\sum y_i)}{n\\sum x_i^2 - (\\sum x_i)^2} = \\frac{5(4459) - (117)(188)}{5(2767) - (117)^2} = \\frac{22295 - 21996}{13835 - 13689} = \\frac{299}{146} \\approx 2.047 \\]
+                            \\[ b = \\frac{1}{n} \\left( \\sum y_i - a \\sum x_i \\right) = \\frac{1}{5} \\left( 188 - \\frac{299}{146}(117) \\right) = \\frac{1}{5} \\left( \\frac{27448 - 34983}{146} \\right) = -\\frac{1507}{146} \\approx -10.32 \\]
+                            Line equation: $y = 2.047x - 10.32$.
                         </div>
                     `
                 },
@@ -456,6 +528,25 @@ const courseData = {
                             \\[ |c_n - x^*| \\le \\frac{b_n - a_n}{2} = \\frac{b-a}{2^{n+1}} \\]
                             This ensures convergence, though slow.
                         </div>
+
+                        <div class="box example">
+                            <span class="box-title">Step-by-Step Example: Bisection Method</span>
+                            Find the root of $f(x) = x^2 - 2$ on $[1, 2]$ to approximate $\\sqrt{2}$.<br><br>
+                            <strong>Initialization:</strong> $a_0 = 1$, $b_0 = 2$. $f(1) = 1^2 - 2 = -1 < 0$ and $f(2) = 2^2 - 2 = 2 > 0$.<br><br>
+                            <strong>Step 1:</strong>
+                            <ol>
+                                <li>Midpoint: $c_0 = \\frac{1 + 2}{2} = 1.5$</li>
+                                <li>Evaluate: $f(1.5) = (1.5)^2 - 2 = 2.25 - 2 = 0.25 > 0$</li>
+                                <li>Since $f(a_0)$ and $f(c_0)$ have opposite signs ($-1$ and $0.25$), the new interval is $[a_1, b_1] = [1, 1.5]$.</li>
+                            </ol>
+                            <strong>Step 2:</strong>
+                            <ol>
+                                <li>Midpoint: $c_1 = \\frac{1 + 1.5}{2} = 1.25$</li>
+                                <li>Evaluate: $f(1.25) = (1.25)^2 - 2 = 1.5625 - 2 = -0.4375 < 0$</li>
+                                <li>Since $f(c_1)$ and $f(b_1)$ have opposite signs ($-0.4375$ and $0.25$), the new interval is $[a_2, b_2] = [1.25, 1.5]$.</li>
+                            </ol>
+                            After 2 steps, the root is bracketed in $[1.25, 1.5]$.
+                        </div>
                     `
                 },
                 {
@@ -484,6 +575,50 @@ const courseData = {
                             $a_2(x) = h''(f(x)) = (a_1'(x))/f'(x) = -f''(x)/(f'(x))^3$. <br>
                             For $p=2$, $x_{n+1} = x_n - \\frac{f(x_n)}{f'(x_n)} - \\frac{f(x_n)^2 f''(x_n)}{2(f'(x_n))^3}$. (Order 3).
                         </div>
+
+                        <h3>Secant Method</h3>
+                        \\[ x_{n+1} = x_n - f(x_n)\\frac{x_n - x_{n-1}}{f(x_n) - f(x_{n-1})} \\]
+                        <p>Approximates the derivative using the secant line through the last two iterates.</p>
+
+                        <div class="box example">
+                            <span class="box-title">Step-by-Step Example: Newton, Secant & Chebyshev</span>
+                            Find the root of $f(x) = x^2 - 2$ with $f'(x) = 2x$ and $f''(x) = 2$.<br><br>
+                            <strong>Newton's Method (Start $x_0 = 1.5$):</strong>
+                            <ol>
+                                <li>$f(1.5) = 2.25 - 2 = 0.25$, $f'(1.5) = 2(1.5) = 3$</li>
+                                <li>$x_1 = 1.5 - \\frac{0.25}{3} = 1.5 - 0.0833 = 1.4167$</li>
+                            </ol>
+                            <strong>Secant Method (Start $x_0 = 1, x_1 = 1.5$):</strong>
+                            <ol>
+                                <li>$f(1) = -1$, $f(1.5) = 0.25$</li>
+                                <li>$x_2 = 1.5 - (0.25)\\frac{1.5 - 1}{0.25 - (-1)} = 1.5 - 0.25\\frac{0.5}{1.25} = 1.5 - 0.1 = 1.4$</li>
+                            </ol>
+                            <strong>Chebyshev Method (Start $x_0 = 1.5$):</strong>
+                            <ol>
+                                <li>Recall $x_1 = x_0 - \\frac{f(x_0)}{f'(x_0)} - \\frac{f(x_0)^2 f''(x_0)}{2(f'(x_0))^3}$</li>
+                                <li>$x_1 = 1.5 - \\frac{0.25}{3} - \\frac{(0.25)^2 (2)}{2(3)^3} = 1.5 - 0.0833 - \\frac{0.125}{54} = 1.4167 - 0.0023 = 1.4144$</li>
+                            </ol>
+                        </div>
+
+
+                        <h3>False Position Method (Regula Falsi)</h3>
+                        <p>Generates an approximation using a secant line but bracketed by points with opposite signs.</p>
+                        <div class="box example">
+                            <span class="box-title">Regula Falsi Example</span>
+                            Find the root of $f(x) = 2x^3 - 4x^2 + 3x$ on $[-1, 1]$.<br><br>
+                            <strong>Step 1: Check interval endpoints</strong>
+                            <ul>
+                                <li>$x_0 = -1 \implies f(x_0) = 2(-1)^3 - 4(-1)^2 + 3(-1) = -2 - 4 - 3 = -9$</li>
+                                <li>$x_1 = 1 \implies f(x_1) = 2(1)^3 - 4(1)^2 + 3(1) = 2 - 4 + 3 = 1$</li>
+                            </ul>
+                            Since $f(x_0)f(x_1) = (-9)(1) = -9 < 0$, the root is bracketed.
+                            <br><br>
+                            <strong>Step 2: Calculate the next iterate $x_2$</strong>
+                            \\[ x_2 = \\frac{x_0 f(x_1) - x_1 f(x_0)}{f(x_1) - f(x_0)} = \\frac{-1(1) - 1(-9)}{1 - (-9)} = \\frac{-1 + 9}{10} = \\frac{8}{10} = 0.8 \\]
+                            <strong>Step 3: Evaluate function at new point to determine next interval</strong>
+                            \\[ f(x_2) = f(0.8) = 2(0.8)^3 - 4(0.8)^2 + 3(0.8) = 2(0.512) - 4(0.64) + 2.4 = 1.024 - 2.56 + 2.4 = 0.864 \\]
+                            Because $f(x_0) = -9$ and $f(x_2) = 0.864$ have opposite signs, the new bracket is $[-1, 0.8]$.
+                        </div>
                     `
                 }
             ]
@@ -500,10 +635,21 @@ const courseData = {
                         \\[ x^{(k+1)} = x^{(k)} + m^{(k)} \\text{ where } J(x^{(k)}) m^{(k)} = -F(x^{(k)}) \\]
                         $J$ is the Jacobian matrix.
                         <div class="box example">
-                            System $\{x^2+y^2=3, e^x+y=1\}$. $J = \\begin{pmatrix} 2x & 2y \\\\ e^x & 1 \\end{pmatrix}$. <br>
-                            At $(1,0)$: $J = \\begin{pmatrix} 2 & 0 \\\\ e & 1 \\end{pmatrix}, F = \\begin{pmatrix} -2 \\\\ e-1 \\end{pmatrix}$. <br>
-                            Solve $\\begin{pmatrix} 2 & 0 \\\\ e & 1 \\end{pmatrix} \\begin{pmatrix} m_1 \\\\ m_2 \\end{pmatrix} = \\begin{pmatrix} 2 \\\\ 1-e \\end{pmatrix}$. <br>
-                            $m_1=1, m_2=1-2e$. $x^{(1)} = (2, 1-2e)^T$.
+                            <span class="box-title">Newton System Example</span>
+                            Solve $\\{x^2+y^2=3, e^x+y=1\\}$ starting at $(x^{(0)}, y^{(0)}) = (1,0)$.<br><br>
+                            <strong>Step 1: Define $F(x,y)$ and evaluate at $(1,0)$</strong>
+                            \\[ F(x,y) = \\begin{pmatrix} x^2+y^2-3 \\\\ e^x+y-1 \\end{pmatrix} \\implies F(1,0) = \\begin{pmatrix} 1^2+0^2-3 \\\\ e^1+0-1 \\end{pmatrix} = \\begin{pmatrix} -2 \\\\ e-1 \\end{pmatrix} \\]
+                            <strong>Step 2: Evaluate the Jacobian $J$ at $(1,0)$</strong>
+                            \\[ J(x,y) = \\begin{pmatrix} 2x & 2y \\\\ e^x & 1 \\end{pmatrix} \\implies J(1,0) = \\begin{pmatrix} 2(1) & 2(0) \\\\ e^1 & 1 \\end{pmatrix} = \\begin{pmatrix} 2 & 0 \\\\ e & 1 \\end{pmatrix} \\]
+                            <strong>Step 3: Solve the linear system $J w^{(0)} = -F$</strong>
+                            \\[ \\begin{pmatrix} 2 & 0 \\\\ e & 1 \\end{pmatrix} \\begin{pmatrix} w_1^{(0)} \\\\ w_2^{(0)} \\end{pmatrix} = \\begin{pmatrix} 2 \\\\ 1-e \\end{pmatrix} \\]
+                            Using forward substitution:
+                            <ol>
+                                <li>$2w_1^{(0)} = 2 \\implies w_1^{(0)} = 1$</li>
+                                <li>$e(1) + w_2^{(0)} = 1 - e \\implies w_2^{(0)} = 1 - 2e$</li>
+                            </ol>
+                            <strong>Step 4: Update the vector</strong>
+                            \\[ \\begin{pmatrix} x^{(1)} \\\\ y^{(1)} \\end{pmatrix} = \\begin{pmatrix} x^{(0)} \\\\ y^{(0)} \\end{pmatrix} + \\begin{pmatrix} w_1^{(0)} \\\\ w_2^{(0)} \\end{pmatrix} = \\begin{pmatrix} 1 \\\\ 0 \\end{pmatrix} + \\begin{pmatrix} 1 \\\\ 1-2e \\end{pmatrix} = \\begin{pmatrix} 2 \\\\ 1-2e \\end{pmatrix} \\]
                         </div>
                     `
                 },
@@ -521,6 +667,24 @@ const courseData = {
                             By Rolle's theorem, $Y'(t)$ has $n+1$ roots, ..., $Y^{(n+1)}(t)$ has 1 root $\\xi$. <br>
                             $0 = Y^{(n+1)}(\\xi) = f^{(n+1)}(\\xi) - \\frac{R_n(x)}{\\ell(x)} (n+1)!$. <br>
                             Solving for $R_n(x)$ gives the theorem.
+                        </div>
+
+                        <h3>Lagrange Interpolation</h3>
+                        <div class="box example">
+                            <span class="box-title">Lagrange Interpolation Example</span>
+                            Find the interpolating polynomial through $(0,1), (1,3), (2,2)$.<br><br>
+                            <strong>Step 1: Calculate the basis polynomials $L_i(x)$</strong>
+                            <ol>
+                                <li>$L_0(x) = \\frac{(x-x_1)(x-x_2)}{(x_0-x_1)(x_0-x_2)} = \\frac{(x-1)(x-2)}{(0-1)(0-2)} = \\frac{x^2 - 3x + 2}{2}$</li>
+                                <li>$L_1(x) = \\frac{(x-x_0)(x-x_2)}{(x_1-x_0)(x_1-x_2)} = \\frac{(x-0)(x-2)}{(1-0)(1-2)} = \\frac{x^2 - 2x}{-1} = -x^2 + 2x$</li>
+                                <li>$L_2(x) = \\frac{(x-x_0)(x-x_1)}{(x_2-x_0)(x_2-x_1)} = \\frac{(x-0)(x-1)}{(2-0)(2-1)} = \\frac{x^2 - x}{2}$</li>
+                            </ol>
+                            <strong>Step 2: Construct the polynomial $P_2(x) = \\sum y_i L_i(x)$</strong>
+                            \\[ P_2(x) = 1 \\cdot \\frac{x^2 - 3x + 2}{2} + 3(-x^2 + 2x) + 2 \\cdot \\frac{x^2 - x}{2} \\]
+                            <strong>Step 3: Algebraic Simplification</strong>
+                            \\[ P_2(x) = \\left(\\frac{1}{2}x^2 - \\frac{3}{2}x + 1\\right) - 3x^2 + 6x + x^2 - x \\]
+                            Combine like terms:
+                            \\[ P_2(x) = \\left(\\frac{1}{2} - 3 + 1\\right)x^2 + \\left(-\\frac{3}{2} + 6 - 1\\right)x + 1 = -\\frac{3}{2}x^2 + \\frac{7}{2}x + 1 \\]
                         </div>
                     `
                 }
@@ -566,6 +730,26 @@ const courseData = {
                             \\[ R_{2n+1}(x) = f(x) - H_{2n+1}(x) = \\frac{f^{(2n+2)}(\\xi)}{(2n+2)!} \\prod_{i=0}^n (x - x_i)^2 \\]
                             The squared term $\\prod (x-x_i)^2$ reflects the "double" hit at each node.
                         </div>
+
+                        <h3>Newton Divided Differences</h3>
+                        <div class="box example">
+                            <span class="box-title">Newton Interpolation Example</span>
+                            Find the Newton polynomial for the points $(1,2), (2,3), (4,11)$.<br><br>
+                            <strong>Step 1: Calculate the divided differences</strong>
+                            <ul>
+                                <li>0th order: $[x_0] = 2, \\quad [x_1] = 3, \\quad [x_2] = 11$</li>
+                                <li>1st order: 
+                                    \\[ [x_0, x_1] = \\frac{[x_1] - [x_0]}{x_1 - x_0} = \\frac{3 - 2}{2 - 1} = 1 \\]
+                                    \\[ [x_1, x_2] = \\frac{[x_2] - [x_1]}{x_2 - x_1} = \\frac{11 - 3}{4 - 2} = \\frac{8}{2} = 4 \\]
+                                </li>
+                                <li>2nd order:
+                                    \\[ [x_0, x_1, x_2] = \\frac{[x_1, x_2] - [x_0, x_1]}{x_2 - x_0} = \\frac{4 - 1}{4 - 1} = \\frac{3}{3} = 1 \\]
+                                </li>
+                            </ul>
+                            <strong>Step 2: Construct the polynomial</strong>
+                            \\[ P_2(x) = [x_0] + [x_0, x_1](x - x_0) + [x_0, x_1, x_2](x - x_0)(x - x_1) \\]
+                            \\[ P_2(x) = 2 + 1(x - 1) + 1(x - 1)(x - 2) \\]
+                        </div>
                     `
                 }
             ]
@@ -590,6 +774,27 @@ const courseData = {
                                 <li>$g''(0) = n(n-1)t^2 + nt = \\sum k^2 p_{n,k} \\implies B_n(t^2; t) = \\frac{n(n-1)t^2+nt}{n^2} = t^2 + \\frac{t(1-t)}{n}$.</li>
                             </ol>
                         </div>
+
+                        <div class="box example">
+                            <span class="box-title">Bernstein Polynomial Example</span>
+                            Find the Bernstein polynomial of degree 2 for $f(t) = t^3$.<br><br>
+                            <strong>Step 1: Evaluate $f(t)$ at the nodes $t_k = \\frac{k}{n}$ for $n=2$</strong>
+                            <ul>
+                                <li>$k=0: f(0) = 0^3 = 0$</li>
+                                <li>$k=1: f\\left(\\frac{1}{2}\\right) = \\left(\\frac{1}{2}\\right)^3 = \\frac{1}{8}$</li>
+                                <li>$k=2: f(1) = 1^3 = 1$</li>
+                            </ul>
+                            <strong>Step 2: Construct the Bernstein polynomial $B_2(f; t)$</strong>
+                            \\[ B_2(t^3; t) = \\sum_{k=0}^2 f\\left(\\frac{k}{2}\\right) \\binom{2}{k} t^k (1-t)^{2-k} \\]
+                            \\[ B_2(t^3; t) = 0 \\cdot \\binom{2}{0} (1-t)^2 + \\frac{1}{8} \\binom{2}{1} t(1-t) + 1 \\cdot \\binom{2}{2} t^2 \\]
+                            <strong>Step 3: Evaluate binomial coefficients and simplify</strong>
+                            <ul>
+                                <li>$\\binom{2}{0} = 1$</li>
+                                <li>$\\binom{2}{1} = 2$</li>
+                                <li>$\\binom{2}{2} = 1$</li>
+                            </ul>
+                            \\[ B_2(t^3; t) = 0 + \\frac{1}{8}(2)t(1-t) + 1(1)t^2 = \\frac{1}{4}t(1-t) + t^2 = t^2 + \\frac{t(1-t)}{4} \\]
+                        </div>
                     `
                 },
                 {
@@ -604,6 +809,21 @@ const courseData = {
                             3. Result: $B(t) = P_{0,n}(t)$.
                         </div>
                         <p>This splits every segment in ratio $t:1-t$, ensuring the point lies within the convex hull.</p>
+
+                        <div class="box example">
+                            <span class="box-title">Step-by-Step Example: de Casteljau Algorithm</span>
+                            Evaluate a degree-2 Bézier curve at $t = 0.5$ for control points $P_0=(0,0), P_1=(2,4), P_2=(4,0)$.<br><br>
+                            <strong>Step 1: First level interpolation ($r=1$)</strong>
+                            <ol>
+                                <li>$P_{0,1} = (1-0.5)P_0 + 0.5P_1 = 0.5(0,0) + 0.5(2,4) = (1,2)$</li>
+                                <li>$P_{1,1} = (1-0.5)P_1 + 0.5P_2 = 0.5(2,4) + 0.5(4,0) = (1,2) + (2,0) = (3,2)$</li>
+                            </ol>
+                            <strong>Step 2: Second level interpolation ($r=2$)</strong>
+                            <ol>
+                                <li>$B(0.5) = P_{0,2} = (1-0.5)P_{0,1} + 0.5P_{1,1} = 0.5(1,2) + 0.5(3,2) = (0.5, 1) + (1.5, 1) = (2,2)$</li>
+                            </ol>
+                            The point on the curve at $t=0.5$ is $(2,2)$.
+                        </div>
                     `
                 }
             ]
@@ -703,6 +923,29 @@ const courseData = {
                             \\[ I_S(f)=\\int_a^b L_2(x)\\,dx = \\frac{b-a}{6}\\left(f(a)+4f\\!\\left(\\frac{a+b}{2}\\right)+f(b)\\right). \\]
                             Its error is \\[ E_S(f)=-\\frac{h^5}{90}f^{(4)}(\\xi), \\qquad h=\\frac{b-a}{2}, \\qquad \\xi\\in(a,b). \\]
                             The degree of exactness is $3$.
+                        </div>
+
+                        <div class="box example">
+                            <span class="box-title">Step-by-Step Example: Quadrature Rules</span>
+                            Approximate $I = \\int_0^2 x^2 \\,dx$ using Midpoint, Trapezoidal, and Simpson's rule. Exact value is $[x^3/3]_0^2 = 8/3 \\approx 2.666$.<br><br>
+                            <strong>1. Midpoint Rule</strong>
+                            <ol>
+                                <li>Interval is $[0, 2]$, midpoint is $x_1 = 1$.</li>
+                                <li>$I_M = (b-a)f\\left(\\frac{a+b}{2}\\right) = 2 \\cdot f(1) = 2(1)^2 = 2$.</li>
+                                <li>Error: $2.666 - 2 = 0.666$.</li>
+                            </ol>
+                            <strong>2. Trapezoidal Rule</strong>
+                            <ol>
+                                <li>$x_0 = 0, x_1 = 2$.</li>
+                                <li>$I_T = \\frac{b-a}{2}(f(0) + f(2)) = \\frac{2}{2}(0^2 + 2^2) = 1(0 + 4) = 4$.</li>
+                                <li>Error: $2.666 - 4 = -1.333$.</li>
+                            </ol>
+                            <strong>3. Simpson's Rule</strong>
+                            <ol>
+                                <li>$x_0 = 0, x_1 = 1, x_2 = 2$.</li>
+                                <li>$I_S = \\frac{b-a}{6}(f(0) + 4f(1) + f(2)) = \\frac{2}{6}(0^2 + 4(1^2) + 2^2) = \\frac{1}{3}(0 + 4 + 4) = \\frac{8}{3} \\approx 2.666$.</li>
+                                <li>Error: $0$ (Exact because Simpson's rule has degree of exactness 3, and $x^2$ is degree 2).</li>
+                            </ol>
                         </div>
                     `
                 },
