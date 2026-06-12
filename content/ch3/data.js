@@ -2,7 +2,7 @@ const ch3Data = [
     {
         "id": "c5-least-squares-intro",
         "title": "The Least Squares Problem",
-        "content": `
+        "content": String.raw`
             <h3>The Least Squares Problem</h3>
 
             <div class="box intuition">
@@ -11,26 +11,20 @@ const ch3Data = [
             </div>
 
             <div class="box definition">
-                <span class="box-title">Problem Statement (Linear Regression)</span>
-                <p><strong>Setup:</strong> Given $n$ data points $(x_i, y_i)$, we want to find a line $f(x) = ax + b$ that fits them best.</p>
-                We define the "error" (residual) for each point as $r_i = y_i - (ax_i + b)$. To find the best fit, we minimize the sum of the squares of these residuals:
-                \\[ S(a, b) = \\sum_{i=1}^n (y_i - (ax_i + b))^2 \\]
+                <span class="box-title">The Residual Vector</span>
+                We want to solve $Ax=b$ where $A \in \mathbb{R}^{m \times n}$ and $m > n$. Since an exact solution usually doesn't exist, we minimize the residual $r = b - Ax$ in the $L_2$ norm:
+                \[ \min_x \|Ax - b\|_2^2 \]
             </div>
 
             <div class="box theorem">
-                <span class="box-title">Derivation of Normal Equations</span>
-                To minimize $S(a, b)$, we take partial derivatives with respect to $a$ and $b$ and set them to zero.
+                <span class="box-title">Derivation of the Normal Equations</span>
                 <ol>
-                    <li><strong>Differentiate with respect to $a$:</strong><br>
-                        \\[ \\frac{\\partial S}{\\partial a} = \\sum_{i=1}^n 2(y_i - ax_i - b)(-x_i) = 0 \\]
-                        Simplify: $\\sum (ax_i^2 + bx_i - x_iy_i) = 0 \\implies a \\sum x_i^2 + b \\sum x_i = \\sum x_i y_i$.
-                    </li>
-                    <li><strong>Differentiate with respect to $b$:</strong><br>
-                        \\[ \\frac{\\partial S}{\\partial b} = \\sum_{i=1}^n 2(y_i - ax_i - b)(-1) = 0 \\]
-                        Simplify: $\\sum (ax_i + b - y_i) = 0 \\implies a \\sum x_i + b \\cdot n = \\sum y_i$.
-                    </li>
+                    <li>Let $f(x) = \|Ax - b\|_2^2 = (Ax - b)^T (Ax - b)$.</li>
+                    <li>Expand: $f(x) = (x^T A^T - b^T)(Ax - b) = x^T A^T A x - 2x^T A^T b + b^T b$.</li>
+                    <li>Gradient: $\nabla f(x) = 2A^T A x - 2A^T b$.</li>
+                    <li>Set to zero: $2A^T A x = 2A^T b$.</li>
+                    <li>Result: $A^T A x = A^T b$.</li>
                 </ol>
-                In matrix form ($A^T A x = A^T y$), these are known as the <strong>Normal Equations</strong>.
             </div>
 
             <div class="box example">
@@ -38,11 +32,11 @@ const ch3Data = [
                 Fit a line to (1, 2), (2, 3), (3, 5).
                 <ul>
                     <li>$n = 3$</li>
-                    <li>$\\sum x = 6, \\sum y = 10, \\sum x^2 = 14, \\sum xy = 23$</li>
+                    <li>$\sum x = 6, \sum y = 10, \sum x^2 = 14, \sum xy = 23$</li>
                 </ul>
                 The Normal Equations are:
-                \\[ 14a + 6b = 23 \\]
-                \\[ 6a + 3b = 10 \\]
+                \[ 14a + 6b = 23 \]
+                \[ 6a + 3b = 10 \]
                 Solving this system gives $a = 1.5, b = 1/3$. The best fit line is $y = 1.5x + 0.333$.
             </div>
 
@@ -55,7 +49,7 @@ const ch3Data = [
     {
         "id": "c5-qr-least-squares",
         "title": "QR Factorization for Least Squares",
-        "content": `
+        "content": String.raw`
             <h3>QR Factorization for Least Squares</h3>
 
             <div class="box intuition">
@@ -73,20 +67,26 @@ const ch3Data = [
                 </ol>
             </div>
 
+            <div class="box theorem">
+                <span class="box-title">Theorem: QR Minimizer Proof</span>
+                If $A = QR$, the solution to $Rx = Q^T b$ minimizes $\|Ax-b\|_2$.
+            </div>
+
             <div class="proof">
-                <strong>Why QR preserves precision (Step-by-Step):</strong>
+                <strong>Step-by-Step Proof:</strong>
                 <ol>
-                    <li>Recall the condition number $K(A)$.</li>
-                    <li>The Normal Equations use $A^T A$, so the condition number becomes $K(A^T A) = [K(A)]^2$.</li>
-                    <li>If $K(A) = 10^4$, the Normal Equations have $K = 10^8$. You lose 8 digits of precision immediately!</li>
-                    <li>Because $Q$ is orthogonal, it doesn't change the condition number: $K(QR) = K(R) = K(A)$.</li>
-                    <li>Result: QR solves the same problem while keeping your data's precision intact.</li>
+                    <li>Recall that orthogonal matrices preserve the $L_2$ norm: $\|Qv\|_2 = \|v\|_2$.</li>
+                    <li>Substitute $A=QR$ into the residual: $\|QRx - b\|_2 = \|Q(Rx - Q^T b)\|_2$.</li>
+                    <li>Note that $Q$ is $m \times m$. We can partition $R = \begin{pmatrix} R_1 \\ 0 \end{pmatrix}$ and $Q^T b = \begin{pmatrix} d_1 \\ d_2 \end{pmatrix}$.</li>
+                    <li>$\|Ax-b\|_2^2 = \|R_1 x - d_1\|_2^2 + \|d_2\|_2^2$.</li>
+                    <li>To minimize this, we must set $R_1 x - d_1 = 0$.</li>
+                    <li>Thus, the minimizer satisfies $R_1 x = d_1$.</li>
                 </ol>
             </div>
 
             <div class="box remark">
                 <span class="box-title">Numerical Choice</span>
-                Use <strong>Normal Equations</strong> for small, hand-calculated problems. Always use <strong>QR</strong> (or SVD) for real-world software and large datasets.
+                Use <strong>Normal Equations</strong> for small, hand-calculated problems. Always use <strong>QR</strong> (or SVD) for real-world software and large datasets to preserve precision.
             </div>
         `
     }
