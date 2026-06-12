@@ -156,6 +156,10 @@ const ch2Data = [
                 <strong>Idea:</strong> "Over-correct" the Gauss-Seidel step. If GS moves the solution in a certain direction, SOR pushes it even further in that direction to get there faster.
                 \[ x^{(k+1)} = (1-\omega)x^{(k)} + \omega x^{(GS)} \]
                 $\omega$ is the relaxation parameter ($1 < \omega < 2$ for acceleration).
+                <br>
+                <strong>Optimal Parameter:</strong> For certain classes of matrices (like those from discretized PDEs), the optimal $\omega$ is:
+                \[ \omega_{\text{opt}} = \frac{2}{1 + \sqrt{1-\rho(G_J)^2}} \]
+                where $\rho(G_J)$ is the spectral radius of the Jacobi iteration matrix.
             </div>
 
             <div class="box example">

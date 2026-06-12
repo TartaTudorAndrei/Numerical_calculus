@@ -84,7 +84,7 @@ const ch1Data = [
                 \[ X^TAX = \sum_{i=1}^n\sum_{j=1}^n a_{ij}x_ix_j \]
             </div>
 
-            <div class="box theorem">
+                <div class="box theorem">
                 <span class="box-title">Theorem: Key Properties</span>
                 If $A$ is positive definite, then:
                 <ol>
@@ -92,6 +92,18 @@ const ch1Data = [
                     <li>All diagonal entries are positive: $a_{ii} > 0$.</li>
                     <li>All eigenvalues of $A$ are strictly positive.</li>
                 </ol>
+            </div>
+
+            <div class="box remark">
+                <span class="box-title">Important Observations</span>
+                <ul>
+                    <li><strong>Converse is false:</strong> Having all $a_{kk} > 0$ does not imply positive definiteness. <br>
+                    Example: $A = \begin{pmatrix} 1 & 10 \\ 10 & 1 \end{pmatrix}$ has $a_{11}=1, a_{22}=1$, but for $X = (1, -1)^T$, $X^TAX = 1 - 20 + 1 = -18 < 0$.</li>
+                    <li><strong>SPD Eigenvalues:</strong> If $A$ is Symmetric Positive Definite (SPD), all its eigenvalues are real and positive.</li>
+                    <li><strong>Non-symmetric PD:</strong> If $A$ is positive definite but not symmetric, eigenvalues can be complex. <br>
+                    Example: $A = \begin{pmatrix} 1 & 1 \\ -1 & 1 \end{pmatrix}$. Quadratic form: $x_1(x_1+x_2) + x_2(-x_1+x_2) = x_1^2 + x_2^2 > 0$. <br>
+                    Eigenvalues: $\det(A-\lambda I) = (1-\lambda)^2 + 1 = 0 \implies \lambda = 1 \pm i$.</li>
+                </ul>
             </div>
 
             <div class="proof">
@@ -217,6 +229,29 @@ const ch1Data = [
                 The <strong>Frobenius norm</strong> $\|A\|_F = \sqrt{\sum a_{ij}^2}$ is NOT an induced norm, but it is still submultiplicative.
             </div>
 
+            <div class="box example">
+                <span class="box-title">Step-by-Step Example: Matrix Norms</span>
+                Consider the matrix $A = \begin{pmatrix} 1 & -2 \\ -3 & 4 \end{pmatrix}$. Let's compute its 1-norm, infinity norm, and Frobenius norm.<br><br>
+                <strong>Step 1: Compute the 1-norm (Max Column Sum)</strong>
+                <ol>
+                    <li>Column 1 absolute sum: $|1| + |-3| = 1 + 3 = 4$</li>
+                    <li>Column 2 absolute sum: $|-2| + |4| = 2 + 4 = 6$</li>
+                    <li>$\|A\|_1 = \max(4, 6) = 6$</li>
+                </ol>
+                <strong>Step 2: Compute the Infinity norm (Max Row Sum)</strong>
+                <ol>
+                    <li>Row 1 absolute sum: $|1| + |-2| = 1 + 2 = 3$</li>
+                    <li>Row 2 absolute sum: $|-3| + |4| = 3 + 4 = 7$</li>
+                    <li>$\|A\|_\infty = \max(3, 7) = 7$</li>
+                </ol>
+                <strong>Step 3: Compute the Frobenius norm</strong>
+                <ol>
+                    <li>Sum of squares of all elements: $1^2 + (-2)^2 + (-3)^2 + 4^2$</li>
+                    <li>$= 1 + 4 + 9 + 16 = 30$</li>
+                    <li>$\|A\|_F = \sqrt{30} \approx 5.477$</li>
+                </ol>
+            </div>
+
             <div class="box error">
                 <span class="box-title">Common Mistake</span>
                 A frequent error is mixing up the $L_1$ and $L_\infty$ matrix norms. Remember: <strong>$L_1$ is the maximum column sum</strong>, while <strong>$L_\infty$ is the maximum row sum</strong>.
@@ -268,20 +303,34 @@ const ch1Data = [
             </div>
 
             <div class="box theorem">
-                <span class="box-title">Theorem: Rayleigh Quotient and 2-norm</span>
-                If $A$ is symmetric, then $\|A\|_2 = \rho(A)$. Furthermore, the Rayleigh quotient $R(X) = \frac{X^T AX}{X^T X}$ is bounded by the eigenvalues:
-                \[ \lambda_{\min} \le \frac{X^T AX}{X^T X} \le \lambda_{\max} \]
+                <span class="box-title">Theorem: Rayleigh Quotient Bound</span>
+                Let $A$ be symmetric with eigenvalues $\lambda_1 \le \dots \le \lambda_n$. Then for any $X$ with $\|X\|_2=1$:
+                \[ \lambda_1 \le X^T AX \le \lambda_n = \rho(A) \]
             </div>
 
             <div class="proof">
                 <strong>Proof of Rayleigh Bound:</strong>
                 <ol>
-                    <li>Since $A$ is symmetric, its eigenvectors $V_i$ form an orthonormal basis.</li>
-                    <li>Express $X$ in this basis: $X = \sum c_i V_i$.</li>
-                    <li>Then $X^T X = \sum c_i^2$.</li>
-                    <li>And $AX = \sum c_i \lambda_i V_i$, so $X^T AX = \sum c_i^2 \lambda_i$.</li>
-                    <li>Replace every $\lambda_i$ with $\lambda_{\max}$: $\sum c_i^2 \lambda_i \le \lambda_{\max} \sum c_i^2 = \lambda_{\max} X^T X$.</li>
-                    <li>Divide by $X^T X$ to get the upper bound. The lower bound is analogous.</li>
+                    <li>Since $A$ is symmetric, $A = Q \Lambda Q^T$ for orthogonal $Q$ and diagonal $\Lambda$.</li>
+                    <li>Let $Y = Q^T X$. Since $Q$ is orthogonal, $\|Y\|_2 = \|X\|_2 = 1$.</li>
+                    <li>$X^T AX = X^T Q \Lambda Q^T X = Y^T \Lambda Y = \sum_{i=1}^n \lambda_i y_i^2$.</li>
+                    <li>Since $y_i^2 \ge 0$ and $\sum y_i^2 = 1$, the sum is a weighted average of $\lambda_i$.</li>
+                    <li>Thus $\lambda_{\min} \le \sum \lambda_i y_i^2 \le \lambda_{\max}$, which is $\lambda_1 \le X^T AX \le \lambda_n$.</li>
+                </ol>
+            </div>
+
+            <div class="box theorem">
+                <span class="box-title">Theorem: Formula for the 2-norm</span>
+                For any matrix $A$, $\|A\|_2 = \sqrt{\rho(A^T A)}$. If $A$ is symmetric, $\|A\|_2 = \rho(A)$.
+            </div>
+            <div class="proof">
+                <strong>Proof Idea:</strong>
+                <ol>
+                    <li>$\|AX\|_2^2 = (AX)^T(AX) = X^T(A^T A)X$.</li>
+                    <li>Let $B = A^T A$. $B$ is symmetric and positive semidefinite.</li>
+                    <li>By the Rayleigh bound, $X^T B X \le \rho(B)$ for $\|X\|_2=1$. Thus $\|A\|_2^2 \le \rho(A^T A)$.</li>
+                    <li>The maximum is attained when $X$ is the eigenvector of $A^T A$ corresponding to $\rho(A^T A)$.</li>
+                    <li>Thus $\|A\|_2 = \sqrt{\rho(A^T A)}$.</li>
                 </ol>
             </div>
         `
@@ -337,6 +386,30 @@ const ch1Data = [
                 The residual is tiny ($\|r\|_\infty = 10^{-4}$), but the error is huge ($\|x-\bar{x}\|_\infty = 1$). 
                 This happens because of the large condition number. A tiny error in your data can be multiplied by **40,000** in your final result!
             </div>
+
+            <h3>Stability and Orthogonal Matrices</h3>
+            <div class="box intuition">
+                <span class="box-title">Intuition</span>
+                Why do we love orthogonal matrices (where $Q^T Q = I$)? Because they preserve the "size" of vectors. They don't stretch or squash space, which means they don't amplify errors.
+            </div>
+            <p><strong>Result:</strong> Orthogonal matrices are perfectly stable with a condition number $K_2(Q) = 1$.</p>
+            <div class="proof">
+                <strong>Proof:</strong>
+                <ol>
+                    <li>$K_2(Q) = \|Q\|_2 \|Q^{-1}\|_2 = \|Q\|_2 \|Q^T\|_2$.</li>
+                    <li>$\|Q\|_2 = \sqrt{\rho(Q^T Q)} = \sqrt{\rho(I)} = 1$.</li>
+                    <li>Similarly, $\|Q^T\|_2 = 1$.</li>
+                    <li>Thus, $K_2(Q) = 1 \cdot 1 = 1$.</li>
+                </ol>
+            </div>
+
+            <h3>Solvers for Ill-conditioned Systems</h3>
+            <p>If you must solve a system with a high condition number, standard Gaussian elimination might fail. Here are some strategies:</p>
+            <ol>
+                <li><strong>Preconditioning:</strong> Transform the system into $M^{-1}Ax = M^{-1}b$ where $M^{-1}A$ has a much lower condition number.</li>
+                <li><strong>QR Decomposition:</strong> Using $A = QR$ is often more stable than solving the normal equations directly. Note $K_2(A) = K_2(R)$.</li>
+                <li><strong>SVD (Singular Value Decomposition):</strong> The ultimate tool for ill-conditioned systems. It allows you to "ignore" the components of the solution that are most affected by noise.</li>
+            </ol>
         `
     }
 ];

@@ -27,6 +27,12 @@ const ch3Data = [
                 </ol>
             </div>
 
+            <div class="box remark">
+                <span class="box-title">Inconsistent Systems</span>
+                If $b \notin \text{Im}(A)$, the system $Ax=b$ has no solution. The projection $p = Ax_{LS}$ is the closest point in the image of $A$ to the vector $b$. The residual $r = b - p$ is always orthogonal to the image of $A$:
+                \[ A^T(b - Ax_{LS}) = 0 \]
+            </div>
+
             <div class="box example">
                 <span class="box-title">Mini Example</span>
                 Fit a line to (1, 2), (2, 3), (3, 5).
@@ -87,6 +93,31 @@ const ch3Data = [
             <div class="box remark">
                 <span class="box-title">Numerical Choice</span>
                 Use <strong>Normal Equations</strong> for small, hand-calculated problems. Always use <strong>QR</strong> (or SVD) for real-world software and large datasets to preserve precision.
+            </div>
+
+            <h3>The Modified Gram-Schmidt (MGS) Algorithm</h3>
+            <div class="box intuition">
+                <span class="box-title">Intuition</span>
+                Classical Gram-Schmidt often fails on computers because rounding errors cause the "orthogonal" vectors to lose their orthogonality. **Modified Gram-Schmidt** rearranges the steps to be much more stable, ensuring that each new vector is subtracted from all remaining vectors as soon as it's found.
+            </div>
+
+            <div class="box algorithm">
+                <span class="box-title">Algorithm: MGS</span>
+                Given columns $a_1, \dots, a_n$ of $A$:
+                <ol>
+                    <li>For $k = 1$ to $n$:
+                        <ol type="a">
+                            <li>$r_{kk} = \|a_k\|_2$</li>
+                            <li>$q_k = a_k / r_{kk}$</li>
+                            <li>For $j = k+1$ to $n$:
+                                <ol type="i">
+                                    <li>$r_{kj} = q_k^T a_j$</li>
+                                    <li>$a_j = a_j - r_{kj} q_k$ (Update remaining vectors immediately!)</li>
+                                </ol>
+                            </li>
+                        </ol>
+                    </li>
+                </ol>
             </div>
         `
     }

@@ -99,19 +99,68 @@ const ch4Data = [
                 \[ x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)} - \frac{f(x_n)^2 f''(x_n)}{2(f'(x_n))^3} \]
             </div>
 
-            <h3>Secant Method</h3>
-            <p>What if you don't have the derivative? You can approximate it using the last two points (a secant line).</p>
-            <div class="box algorithm">
-                <span class="box-title">The Secant Formula</span>
-                \[ x_{n+1} = x_n - f(x_n)\frac{x_n - x_{n-1}}{f(x_n) - f(x_{n-1})} \]
-            </div>
-
             <div class="box error">
                 <span class="box-title">Common Pitfalls</span>
                 <ul>
                     <li><strong>Zero Derivative:</strong> If $f'(x_n) = 0$, the formula breaks (you can't divide by zero). Geometrically, the tangent is horizontal and never hits the $x$-axis.</li>
                     <li><strong>Poor Starting Guess:</strong> If you start too far from the root, Newton's method can "shoot off" to infinity or get stuck in a loop.</li>
                 </ul>
+            </div>
+        `
+    },
+    {
+        "id": "c7-secant-method",
+        "title": "The Secant Method",
+        "content": String.raw`
+            <h3>The Secant Method</h3>
+
+            <div class="box intuition">
+                <span class="box-title">Intuition</span>
+                What if you don't have the derivative? You can approximate it using the last two points (a secant line). It's faster than Bisection but doesn't require the calculus of Newton's method.
+            </div>
+
+            <div class="box algorithm">
+                <span class="box-title">The Secant Formula</span>
+                Given two initial guesses $x_0, x_1$:
+                \[ x_{n+1} = x_n - f(x_n)\frac{x_n - x_{n-1}}{f(x_n) - f(x_{n-1})} \]
+            </div>
+
+            <div class="box theorem">
+                <span class="box-title">Order of Secant Method</span>
+                The error in the secant method follows the recurrence:
+                \[ e_{n+1} \approx C e_n e_{n-1} \]
+                This leads to an order of convergence $p = \phi = \frac{1 + \sqrt{5}}{2} \approx 1.618$ (The Golden Ratio).
+            </div>
+
+            <div class="proof">
+                <strong>Proof Sketch:</strong>
+                <ol>
+                    <li>Assume $e_{n+1} = K e_n^p$. Then $e_n = K e_{n-1}^p \implies e_{n-1} = (e_n/K)^{1/p}$.</li>
+                    <li>Substitute into $e_{n+1} = C e_n e_{n-1}$:
+                        \[ K e_n^p = C e_n (e_n/K)^{1/p} = C K^{-1/p} e_n^{1 + 1/p} \]
+                    </li>
+                    <li>Equate the exponents: $p = 1 + 1/p$.</li>
+                    <li>Multiply by $p$: $p^2 - p - 1 = 0$.</li>
+                    <li>Solve for $p$: $p = \frac{1 \pm \sqrt{5}}{2}$. Since $p > 1$, we get the Golden Ratio.</li>
+                </ol>
+            </div>
+        `
+    },
+    {
+        "id": "c7-false-position",
+        "title": "False Position Method",
+        "content": String.raw`
+            <h3>False Position (Regula Falsi)</h3>
+
+            <div class="box intuition">
+                <span class="box-title">Intuition</span>
+                False Position is a hybrid. Like Bisection, it keeps the root bracketed between two points. Like Secant, it uses a straight line between $f(a)$ and $f(b)$ to guess the next point. It is usually faster than Bisection but guaranteed to converge.
+            </div>
+
+            <div class="box algorithm">
+                <span class="box-title">Formula</span>
+                \[ c = \frac{a f(b) - b f(a)}{f(b) - f(a)} \]
+                Then update the interval $[a,b]$ just like in Bisection.
             </div>
         `
     },

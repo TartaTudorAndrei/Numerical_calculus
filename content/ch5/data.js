@@ -40,6 +40,13 @@ const ch5Data = [
                 </ol>
             </div>
 
+            <div class="box algorithm">
+                <span class="box-title">Quasi-Newton Methods (Broyden)</span>
+                Computing the Jacobian at every step is expensive. **Broyden's Method** approximates the Jacobian $B_k$ and updates it using a rank-one matrix:
+                \[ B_{k+1} = B_k + \frac{(F_{k+1} - F_k - B_k s_k)s_k^T}{s_k^T s_k} \]
+                where $s_k = X_{k+1} - X_k$. This is much faster for large systems.
+            </div>
+
             <div class="box example">
                 <span class="box-title">Mini Example</span>
                 Solve $x^2 + y^2 = 3$ and $x + y = 2$.
@@ -125,7 +132,8 @@ const ch5Data = [
 
             <div class="box error">
                 <span class="box-title">Common Pitfall: Runge's Phenomenon</span>
-                You might think "more points = better fit." But for high-degree polynomials with equally spaced points, the $\prod (x-x_i)$ term starts "wiggling" wildly near the edges. In practice, we use **Splines** or **Chebyshev nodes** to avoid this.
+                Using high-degree polynomials with equally spaced nodes can lead to wild oscillations at the edges of the interval. For the function $f(x) = \frac{1}{1+25x^2}$ on $[-1, 1]$, the interpolation error actually **increases** near the boundaries as you add more points ($n \to \infty$). 
+                <br><strong>Solution:</strong> In practice, we use **Splines** (piecewise polynomials) or **Chebyshev nodes** (unequally spaced) to avoid this.
             </div>
         `
     }
