@@ -20,6 +20,7 @@ const app = {
         this.mobileOverlay = document.getElementById('mobile-overlay');
         this.prevBtn = document.getElementById('prev-btn');
         this.nextBtn = document.getElementById('next-btn');
+        this.progressBar = document.getElementById('progress-bar');
     },
     
     bindEvents() {
@@ -30,6 +31,15 @@ const app = {
         this.prevBtn.addEventListener('click', () => this.navigateStep(-1));
         this.nextBtn.addEventListener('click', () => this.navigateStep(1));
         window.addEventListener('hashchange', () => this.loadContentFromHash());
+        window.addEventListener('scroll', () => this.updateScrollProgress());
+    },
+
+    updateScrollProgress() {
+        if (!this.progressBar) return;
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+        this.progressBar.style.width = scrolled + "%";
     },
     
     toggleTheme() {
@@ -46,9 +56,11 @@ const app = {
         if (open) {
             this.sidebar.classList.add('open');
             this.mobileOverlay.classList.add('active');
+            this.menuToggle.setAttribute('aria-expanded', 'true');
         } else {
             this.sidebar.classList.remove('open');
             this.mobileOverlay.classList.remove('active');
+            this.menuToggle.setAttribute('aria-expanded', 'false');
         }
     },
     
@@ -57,16 +69,25 @@ const app = {
         courseData.chapters.forEach(ch => {
             html += `
                 <div class="nav-chapter-container">
-                    <div class="nav-chapter" data-id="${ch.id}" onclick="app.toggleChapter('${ch.id}')">
+                    <button class="nav-chapter" 
+                            data-id="${ch.id}" 
+                            onclick="app.toggleChapter('${ch.id}')"
+                            aria-expanded="false"
+                            aria-controls="sections-${ch.id}">
                         <span>${ch.title}</span>
-                        <span class="chevron">▼</span>
-                    </div>
-                    <ul class="nav-sections" id="sections-${ch.id}">
+                        <span class="chevron" aria-hidden="true">▼</span>
+                    </button>
+                    <ul class="nav-sections" id="sections-${ch.id}" role="list">
             `;
             ch.sections.forEach(sec => {
                 html += `
-                    <li class="nav-section" data-id="${sec.id}" onclick="app.navigateTo('${sec.id}')">
-                        ${sec.title}
+                    <li class="nav-section-item">
+                        <button class="nav-section" 
+                                data-id="${sec.id}" 
+                                onclick="app.navigateTo('${sec.id}')"
+                                role="link">
+                            ${sec.title}
+                        </button>
                     </li>
                 `;
             });
@@ -80,17 +101,22 @@ const app = {
     
     toggleChapter(chId) {
         const sectionsList = document.getElementById(`sections-${chId}`);
-        const chapterEl = document.querySelector(`.nav-chapter[data-id="${chId}"]`);
-        
-        const wasActive = sectionsList.classList.contains('active');
+        const chapterBtn = document.querySelector(`.nav-chapter[data-id="${chId}"]`);
+        if (!sectionsList || !chapterBtn) return;
+
+        const isOpen = sectionsList.classList.contains('active');
         
         // Close all
         document.querySelectorAll('.nav-sections').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-chapter').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-chapter').forEach(el => {
+            el.classList.remove('active');
+            el.setAttribute('aria-expanded', 'false');
+        });
         
-        if (!wasActive) {
+        if (!isOpen) {
             sectionsList.classList.add('active');
-            chapterEl.classList.add('active');
+            chapterBtn.classList.add('active');
+            chapterBtn.setAttribute('aria-expanded', 'true');
         }
     },
     
@@ -137,16 +163,25 @@ const app = {
         } else {
             this.renderSection(hash);
         }
+
+        // Trigger fade-in
+        if (this.articleBody) {
+            this.articleBody.classList.remove('fade-in');
+            void this.articleBody.offsetWidth; // trigger reflow
+            this.articleBody.classList.add('fade-in');
+        }
         
         // Update Footer Buttons
         const allIds = this.getLinearIds();
         const currentIndex = allIds.indexOf(hash);
-        this.prevBtn.disabled = currentIndex <= 0;
-        this.nextBtn.disabled = currentIndex >= allIds.length - 1 || currentIndex === -1;
+        if (this.prevBtn && this.nextBtn) {
+            this.prevBtn.disabled = currentIndex <= 0;
+            this.nextBtn.disabled = currentIndex >= allIds.length - 1 || currentIndex === -1;
+        }
         
         // Re-render math
         if (typeof renderMathInElement === 'function') {
-            renderMathInElement(this.articleBody, {
+            renderMathInElement(this.articleBody || document.body, {
                 delimiters: [
                     {left: '$$', right: '$$', display: true},
                     {left: '$', right: '$', display: false},
@@ -158,6 +193,7 @@ const app = {
         }
         
         window.scrollTo(0, 0);
+        this.updateScrollProgress();
     },
     
     renderWelcome() {
@@ -204,9 +240,11 @@ const app = {
     renderAudit() {
         this.breadcrumb.innerText = 'Internal Tools / Content Audit';
         let html = `<h2>Content Audit</h2><p>This panel tracks the extraction and mapping of topics from raw LaTeX files into this study platform.</p><ul>`;
-        courseData.audit.forEach(item => {
-            html += `<li><strong>${item.source}:</strong> ${item.topics.join(', ')}</li>`;
-        });
+        if (courseData.audit) {
+            courseData.audit.forEach(item => {
+                html += `<li><strong>${item.source}:</strong> ${item.topics.join(', ')}</li>`;
+            });
+        }
         html += `</ul>`;
         this.articleBody.innerHTML = html;
     },
@@ -214,9 +252,11 @@ const app = {
     renderCorrections() {
         this.breadcrumb.innerText = 'Internal Tools / Corrections Log';
         let html = `<h2>Corrections & Transcription Log</h2><p>Below is a log of notable mathematical adjustments, OCR cleanup, and normalization performed on the raw source files to ensure rigor.</p><table><thead><tr><th>Source</th><th>Original Issue/OCR Artifact</th><th>Corrected Version / Mathematical Rationale</th></tr></thead><tbody>`;
-        courseData.corrections.forEach(item => {
-            html += `<tr><td><code>${item.file}</code></td><td>${item.original}</td><td>${item.corrected}</td></tr>`;
-        });
+        if (courseData.corrections) {
+            courseData.corrections.forEach(item => {
+                html += `<tr><td><code>${item.file}</code></td><td>${item.original}</td><td>${item.corrected}</td></tr>`;
+            });
+        }
         html += `</tbody></table>`;
         this.articleBody.innerHTML = html;
     },
@@ -228,14 +268,16 @@ const app = {
         }
         
         const lowerQuery = query.toLowerCase();
-        let html = '<ul class="search-results">';
+        let html = '<ul class="search-results" role="listbox">';
         
         courseData.chapters.forEach(ch => {
             ch.sections.forEach(sec => {
                 if (sec.title.toLowerCase().includes(lowerQuery) || sec.content.toLowerCase().includes(lowerQuery)) {
                     html += `
-                        <li class="nav-section" onclick="app.navigateTo('${sec.id}')">
-                            <small>${ch.title}</small><br><strong>${sec.title}</strong>
+                        <li class="search-result-item" role="option">
+                            <button class="search-link" onclick="app.navigateTo('${sec.id}')">
+                                <small>${ch.title}</small><br><strong>${sec.title}</strong>
+                            </button>
                         </li>
                     `;
                 }
