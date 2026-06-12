@@ -1,69 +1,60 @@
 const app = {
     currentId: 'welcome',
-    
+    allSections: [],
+
     init() {
         this.cacheDOM();
+        this.flattenSections();
+        
+        ThemeModule.init();
+        SearchModule.init(this);
+        UIModule.init(this);
+        
         this.bindEvents();
         this.renderNav();
         this.loadContentFromHash();
     },
-    
+
     cacheDOM() {
-        this.body = document.body;
-        this.themeToggle = document.getElementById('theme-toggle');
-        this.searchInput = document.getElementById('search-input');
         this.navLinks = document.getElementById('nav-links');
         this.articleBody = document.getElementById('article-body');
         this.breadcrumb = document.getElementById('breadcrumb');
-        this.menuToggle = document.getElementById('menu-toggle');
-        this.sidebar = document.getElementById('sidebar');
-        this.mobileOverlay = document.getElementById('mobile-overlay');
         this.prevBtn = document.getElementById('prev-btn');
         this.nextBtn = document.getElementById('next-btn');
-        this.progressBar = document.getElementById('progress-bar');
     },
-    
+
     bindEvents() {
-        this.themeToggle.addEventListener('click', () => this.toggleTheme());
-        this.searchInput.addEventListener('input', (e) => this.handleSearch(e.target.value));
-        this.menuToggle.addEventListener('click', () => this.toggleMobileSidebar(true));
-        this.mobileOverlay.addEventListener('click', () => this.toggleMobileSidebar(false));
         this.prevBtn.addEventListener('click', () => this.navigateStep(-1));
         this.nextBtn.addEventListener('click', () => this.navigateStep(1));
         window.addEventListener('hashchange', () => this.loadContentFromHash());
-        window.addEventListener('scroll', () => this.updateScrollProgress());
     },
 
-    updateScrollProgress() {
-        if (!this.progressBar) return;
-        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
-        this.progressBar.style.width = scrolled + "%";
+    flattenSections() {
+        courseData.chapters.forEach(ch => {
+            ch.sections.forEach(sec => {
+                this.allSections.push({
+                    ...sec,
+                    chapterTitle: ch.title,
+                    chapterId: ch.id
+                });
+            });
+        });
+        
+        // Add audit and corrections as virtual sections
+        this.allSections.push({
+            id: 'audit',
+            title: 'Content Audit',
+            chapterTitle: 'Course Admin',
+            content: this.generateAuditHTML()
+        });
+        this.allSections.push({
+            id: 'corrections',
+            title: 'Corrections Log',
+            chapterTitle: 'Course Admin',
+            content: this.generateCorrectionsHTML()
+        });
     },
-    
-    toggleTheme() {
-        if (this.body.classList.contains('light-theme')) {
-            this.body.classList.remove('light-theme');
-            this.body.classList.add('dark-theme');
-        } else {
-            this.body.classList.remove('dark-theme');
-            this.body.classList.add('light-theme');
-        }
-    },
-    
-    toggleMobileSidebar(open) {
-        if (open) {
-            this.sidebar.classList.add('open');
-            this.mobileOverlay.classList.add('active');
-            this.menuToggle.setAttribute('aria-expanded', 'true');
-        } else {
-            this.sidebar.classList.remove('open');
-            this.mobileOverlay.classList.remove('active');
-            this.menuToggle.setAttribute('aria-expanded', 'false');
-        }
-    },
-    
+
     renderNav() {
         let html = '';
         courseData.chapters.forEach(ch => {
@@ -97,197 +88,129 @@ const app = {
             `;
         });
         this.navLinks.innerHTML = html;
+        this.updateActiveNav();
     },
-    
-    toggleChapter(chId) {
-        const sectionsList = document.getElementById(`sections-${chId}`);
-        const chapterBtn = document.querySelector(`.nav-chapter[data-id="${chId}"]`);
-        if (!sectionsList || !chapterBtn) return;
 
-        const isOpen = sectionsList.classList.contains('active');
+    toggleChapter(id) {
+        const btn = document.querySelector(`.nav-chapter[data-id="${id}"]`);
+        const list = document.getElementById(`sections-${id}`);
+        const isOpen = btn.getAttribute('aria-expanded') === 'true';
         
-        // Close all
-        document.querySelectorAll('.nav-sections').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.nav-chapter').forEach(el => {
-            el.classList.remove('active');
-            el.setAttribute('aria-expanded', 'false');
-        });
-        
-        if (!isOpen) {
-            sectionsList.classList.add('active');
-            chapterBtn.classList.add('active');
-            chapterBtn.setAttribute('aria-expanded', 'true');
-        }
+        btn.setAttribute('aria-expanded', !isOpen);
+        btn.classList.toggle('active', !isOpen);
+        list.classList.toggle('active', !isOpen);
     },
-    
+
     navigateTo(id) {
         window.location.hash = id;
-        this.toggleMobileSidebar(false);
+        UIModule.toggleMobileSidebar(false);
     },
-    
-    navigateStep(direction) {
-        const allIds = this.getLinearIds();
-        const currentIndex = allIds.indexOf(this.currentId);
-        const nextIndex = currentIndex + direction;
-        if (nextIndex >= 0 && nextIndex < allIds.length) {
-            this.navigateTo(allIds[nextIndex]);
+
+    navigateStep(step) {
+        const currentIndex = this.allSections.findIndex(s => s.id === this.currentId);
+        const nextIndex = currentIndex + step;
+        if (nextIndex >= 0 && nextIndex < this.allSections.length) {
+            this.navigateTo(this.allSections[nextIndex].id);
         }
     },
-    
-    getLinearIds() {
-        const ids = ['welcome'];
-        courseData.chapters.forEach(ch => {
-            ch.sections.forEach(sec => {
-                ids.push(sec.id);
-            });
-        });
-        ids.push('audit', 'corrections');
-        return ids;
-    },
-    
+
     loadContentFromHash() {
-        const hash = window.location.hash.substring(1) || 'welcome';
-        this.currentId = hash;
+        const id = window.location.hash.replace('#', '') || 'welcome';
+        this.renderContent(id);
+        this.updateActiveNav();
+    },
+
+    renderContent(id) {
+        this.currentId = id;
+        const section = this.allSections.find(s => s.id === id);
         
-        // Update Active states in Nav
-        document.querySelectorAll('.nav-section').forEach(el => el.classList.remove('active'));
-        const activeSec = document.querySelector(`.nav-section[data-id="${hash}"]`);
-        if (activeSec) activeSec.classList.add('active');
-        
-        if (hash === 'welcome') {
-            this.renderWelcome();
-        } else if (hash === 'audit') {
-            this.renderAudit();
-        } else if (hash === 'corrections') {
-            this.renderCorrections();
-        } else {
-            this.renderSection(hash);
+        if (id === 'welcome') {
+            this.articleBody.innerHTML = `
+                <div id="welcome-screen">
+                    <h2>Welcome to the Numerical Calculus Study Guide</h2>
+                    <p>Select a chapter from the sidebar to begin. This guide contains complete course notes, theorems, algorithms, and examples.</p>
+                    <div class="quick-links">
+                        <button class="nav-btn" onclick="app.navigateTo('c2-special-matrices')">Start with Matrices</button>
+                        <button class="nav-btn" onclick="app.navigateTo('corrections')">View Corrections Log</button>
+                    </div>
+                </div>
+            `;
+            this.breadcrumb.textContent = 'Home';
+        } else if (section) {
+            this.articleBody.innerHTML = section.content;
+            this.breadcrumb.textContent = `${section.chapterTitle} / ${section.title}`;
+            
+            // Re-render KaTeX
+            if (window.renderMathInElement) {
+                renderMathInElement(this.articleBody, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError : false
+                });
+            }
+
+            // Initialize interactive elements
+            if (window.InteractiveModule) {
+                InteractiveModule.init();
+            }
         }
 
-        // Trigger fade-in
-        if (this.articleBody) {
-            this.articleBody.classList.remove('fade-in');
-            void this.articleBody.offsetWidth; // trigger reflow
-            this.articleBody.classList.add('fade-in');
-        }
-        
-        // Update Footer Buttons
-        const allIds = this.getLinearIds();
-        const currentIndex = allIds.indexOf(hash);
-        if (this.prevBtn && this.nextBtn) {
-            this.prevBtn.disabled = currentIndex <= 0;
-            this.nextBtn.disabled = currentIndex >= allIds.length - 1 || currentIndex === -1;
-        }
-        
-        // Re-render math
-        if (typeof renderMathInElement === 'function') {
-            renderMathInElement(this.articleBody || document.body, {
-                delimiters: [
-                    {left: '$$', right: '$$', display: true},
-                    {left: '$', right: '$', display: false},
-                    {left: '\\(', right: '\\)', display: false},
-                    {left: '\\[', right: '\\]', display: true}
-                ],
-                throwOnError : false
-            });
-        }
-        
-        window.scrollTo(0, 0);
-        this.updateScrollProgress();
+        UIModule.applyAnimations();
+        UIModule.scrollToTop();
+        this.updateButtons();
     },
-    
-    renderWelcome() {
-        this.breadcrumb.innerText = 'Home';
-        this.articleBody.innerHTML = `
-            <div id="welcome-screen">
-                <h2>Welcome to the Numerical Calculus Study Guide</h2>
-                <p>Select a chapter from the sidebar to begin. This guide contains complete course notes, theorems, algorithms, and examples.</p>
-                <div class="quick-links">
-                    <button class="nav-btn" onclick="app.navigateTo('c2-special-matrices')">Start with Matrices</button>
-                    <button class="nav-btn" onclick="app.navigateTo('corrections')">View Corrections Log</button>
-                </div>
-            </div>
-        `;
-    },
-    
-    renderSection(id) {
-        let foundSec = null;
-        let foundCh = null;
-        
-        courseData.chapters.forEach(ch => {
-            ch.sections.forEach(sec => {
-                if (sec.id === id) {
-                    foundSec = sec;
-                    foundCh = ch;
-                }
-            });
+
+    updateActiveNav() {
+        document.querySelectorAll('.nav-section').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.id === this.currentId);
         });
-        
-        if (foundSec) {
-            this.breadcrumb.innerText = `${foundCh.title} / ${foundSec.title}`;
-            this.articleBody.innerHTML = foundSec.content;
-            
-            // Ensure parent chapter is open
-            const sectionsList = document.getElementById(`sections-${foundCh.id}`);
-            if (sectionsList && !sectionsList.classList.contains('active')) {
-                this.toggleChapter(foundCh.id);
+
+        // Auto-expand current chapter
+        const currentSection = this.allSections.find(s => s.id === this.currentId);
+        if (currentSection && currentSection.chapterId) {
+            const btn = document.querySelector(`.nav-chapter[data-id="${currentSection.chapterId}"]`);
+            if (btn && btn.getAttribute('aria-expanded') === 'false') {
+                this.toggleChapter(currentSection.chapterId);
             }
-        } else {
-            this.articleBody.innerHTML = `<h2>404 - Section Not Found</h2>`;
         }
     },
-    
-    renderAudit() {
-        this.breadcrumb.innerText = 'Internal Tools / Content Audit';
-        let html = `<h2>Content Audit</h2><p>This panel tracks the extraction and mapping of topics from raw LaTeX files into this study platform.</p><ul>`;
-        if (courseData.audit) {
-            courseData.audit.forEach(item => {
-                html += `<li><strong>${item.source}:</strong> ${item.topics.join(', ')}</li>`;
-            });
-        }
-        html += `</ul>`;
-        this.articleBody.innerHTML = html;
+
+    updateButtons() {
+        const currentIndex = this.allSections.findIndex(s => s.id === this.currentId);
+        this.prevBtn.disabled = currentIndex <= 0;
+        this.nextBtn.disabled = currentIndex === -1 || currentIndex >= this.allSections.length - 1;
     },
-    
-    renderCorrections() {
-        this.breadcrumb.innerText = 'Internal Tools / Corrections Log';
-        let html = `<h2>Corrections & Transcription Log</h2><p>Below is a log of notable mathematical adjustments, OCR cleanup, and normalization performed on the raw source files to ensure rigor.</p><table><thead><tr><th>Source</th><th>Original Issue/OCR Artifact</th><th>Corrected Version / Mathematical Rationale</th></tr></thead><tbody>`;
-        if (courseData.corrections) {
-            courseData.corrections.forEach(item => {
-                html += `<tr><td><code>${item.file}</code></td><td>${item.original}</td><td>${item.corrected}</td></tr>`;
-            });
-        }
-        html += `</tbody></table>`;
-        this.articleBody.innerHTML = html;
-    },
-    
-    handleSearch(query) {
-        if (!query.trim()) {
-            this.renderNav();
-            return;
-        }
-        
-        const lowerQuery = query.toLowerCase();
-        let html = '<ul class="search-results" role="listbox">';
-        
-        courseData.chapters.forEach(ch => {
-            ch.sections.forEach(sec => {
-                if (sec.title.toLowerCase().includes(lowerQuery) || sec.content.toLowerCase().includes(lowerQuery)) {
-                    html += `
-                        <li class="search-result-item" role="option">
-                            <button class="search-link" onclick="app.navigateTo('${sec.id}')">
-                                <small>${ch.title}</small><br><strong>${sec.title}</strong>
-                            </button>
-                        </li>
-                    `;
-                }
-            });
+
+    generateAuditHTML() {
+        let html = '<h2>Content Audit</h2><div class="audit-list">';
+        courseData.audit.forEach(item => {
+            html += `
+                <div class="box remark">
+                    <span class="box-title">Source: ${item.source}</span>
+                    <ul>${item.topics.map(t => `<li>${t}</li>`).join('')}</ul>
+                </div>
+            `;
         });
-        
-        html += '</ul>';
-        this.navLinks.innerHTML = html;
+        return html + '</div>';
+    },
+
+    generateCorrectionsHTML() {
+        let html = '<h2>Corrections Log</h2>';
+        courseData.corrections.forEach(item => {
+            html += `
+                <div class="box definition">
+                    <span class="box-title">Correction: ${item.file}</span>
+                    <p><strong>Original:</strong> ${item.original}</p>
+                    <p><strong>Corrected:</strong> ${item.corrected}</p>
+                </div>
+            `;
+        });
+        return html;
     }
 };
 
-window.app = app;
-app.init();
+document.addEventListener('DOMContentLoaded', () => app.init());

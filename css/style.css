@@ -337,7 +337,27 @@ body {
     border-left: 6px solid transparent;
     box-shadow: var(--shadow-sm);
     position: relative;
+    overflow-x: auto; /* Added to handle small screens */
 }
+
+/* Ensure math displays don't overflow their containers */
+.katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 1rem 0;
+    margin: 1rem 0;
+}
+
+/* Specific fix for text inside boxes on mobile */
+@media (max-width: 768px) {
+    .box {
+        padding: 1.25rem 1.5rem;
+    }
+    #article-body {
+        font-size: 1.05rem;
+    }
+}
+
 
 .box-title {
     display: block;
@@ -553,6 +573,46 @@ body {
 .fade-in {
     animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* Interactive Widgets */
+.widget-box {
+    background-color: var(--card-bg);
+    border: 1px solid var(--sidebar-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: var(--shadow-sm);
+}
+
+.widget-box h4 {
+    margin-top: 0 !important;
+    color: var(--accent-color) !important;
+}
+
+.input-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.input-group input {
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--sidebar-border);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    width: 80px;
+}
+
 
 /* Search results refinement */
 .search-results {
